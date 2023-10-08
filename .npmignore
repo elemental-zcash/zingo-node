@@ -1,4 +1,6 @@
 node_modules
-rust
+rust/target
 build
 native
+prebuilds
+docker

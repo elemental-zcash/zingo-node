@@ -1,45 +1,52 @@
 {
   "name": "@elemental-zcash/zingo-node",
-  "version": "0.0.1-beta.2",
+  "version": "0.0.1-beta.9",
   "description": "Node.js bindings for Zingo wallet/SDK",
   "main": "lib/index.js",
   "module": "lib/index.js",
   "exports": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf lib/",
     "build:types": "tsc -d -p tsconfig.json",
     "build:js": "tsc -p tsconfig.json",
     "build": "run-s clean build:js build:types",
-    "native:build": "cargo-cp-artifact -a cdylib zingolib-native native/index.node -- cargo build --manifest-path rust/Cargo.toml --message-format=json-render-diagnostics",
-    "native:build-release": "npm run native:build -- --release",
-    "native:build:linux-x64": "npm run native:build-release -- --target x86_64-unknown-linux-gnu",
-    "native:build:linux-x64-musl": "npm run native:build-release -- --target x86_64-unknown-linux-musl",
-    "native:build:linux-arm64": "npm run native:build-release -- --target aarch64-unknown-linux-gnu",
-    "native:build:macos-x64": "npm run native:build-release -- --target x86_64-apple-darwin",
-    "native:build:macos-arm64": "npm run native:build-release -- --target aarch64-apple-darwin",
-    "native:build:windows-x64": "npm run native:build-release -- --target x86_64-pc-windows-msvc",
-    "native:build:windows-arm64": "npm run native:build-release -- --target aarch64-pc-windows-msvc",
-    "install": "node-pre-gyp install --fallback-to-build=false"
+    "build:neon": "cargo-cp-artifact -a cdylib zingolib-native ./index.node -- cargo build --manifest-path rust/Cargo.toml --message-format=json-render-diagnostics",
+    "build:neon:release": "npm run build:neon -- --release",
+    "build:neon:x64": "npm run build:neon:release && node --input-type=module --eval \"import defaultExport from './scripts/move-artifact.js'; defaultExport()\"",
+    "build:neon:linux-x64": "npm run build:neon:release -- --target x86_64-unknown-linux-gnu",
+    "build:neon:linux-arm64": "npm run build:neon:release -- --target aarch64-unknown-linux-gnu",
+    "build:neon:macos-x64": "npm run build:neon:release -- --target x86_64-apple-darwin",
+    "build:neon:macos-arm64": "npm run build:neon:release -- --target aarch64-apple-darwin",
+    "build:neon:windows-x64": "npm run build:neon:release -- --target x86_64-pc-windows-msvc",
+    "build:neon:windows-arm64": "npm run build:neon:release -- --target aarch64-pc-windows-msvc",
+    "prebuild:x64": "prebuild --runtime napi --target 6 --prepack 'npm run build:neon:x64' --strip --arch x64",
+    "prebuild:macos-arm64": "prebuild --runtime napi --target 6 --tag-prefix=zingo-node-v --prepack 'npm run build:neon:macos-arm64' --strip --arch arm64",
+    "rebuild": "npm run build:neon && npm run build:js && node scripts/strip.js",
+    "install": "prebuild-install --runtime napi --tag-prefix=zingo-node-v || npm run rebuild"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.7"
+    "prebuild-install": "^7.1.1"
   },
   "devDependencies": {
     "@types/node": "^20.8.2",
     "cargo-cp-artifact": "^0.1.8",
     "npm-run-all": "^4.1.5",
+    "prebuild": "^12.1.0",
     "typescript": "^5.2.2"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elemental-zcash/zingo-node.git"
+},
   "binary": {
-    "module_name": "index",
-    "module_path": "./native",
-    "host": "https://github.com/elemental-zcash/zingo-node/releases/download/",
-    "package_name": "{module_name}-v{version}-{node_abi}-{platform}-{arch}-{libc}.tar.gz",
-    "remote_path": "{version}"
+    "napi_versions": [
+      6
+  ]
   }
 }
