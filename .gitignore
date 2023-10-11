@@ -135,3 +135,7 @@ target/
 lib/
 native/
 build/
+prebuilds/
+
+.DS_Store
+

@@ -2,7 +2,7 @@ FROM node:18-bullseye-slim
 LABEL Description="Rust compile env for Linux + Windows (cross)"
 
 RUN apt update
-RUN apt install -y build-essential mingw-w64 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf curl vim wget git
+RUN apt install -y build-essential mingw-w64 gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf curl vim wget git python3 python3-pip
 
 
 # Get Rust
